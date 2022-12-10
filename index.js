@@ -1,18 +1,19 @@
-import { argv } from 'node:process';
 import * as readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'process';
+import * as url from 'url';
+import { parseArgs } from './parseArgs.js';
 
-const getUserName = (args) => {
-  const firstArg = args[0];
-  return firstArg.split('=')[1];
-};
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
+const { username } = parseArgs(process.argv);
 
 const runApp = () => {
-  const args = argv.slice(2);
-  const userName = getUserName(args);
-  const greeting = `Welcome to the File Manager, ${userName}!`;
-  const goodbye = `Thank you for using File Manager, ${userName}, goodbye!`
+  const greeting = `Welcome to the File Manager, ${username}!`;
+  const goodbye = `Thank you for using File Manager, ${username}, goodbye!`
+  const cwdMessage = `You are currently in ${__dirname}`;
   console.log(greeting);
+  console.log(cwdMessage);
   const rl = readline.createInterface({ input, output });
   rl.on('SIGINT', () => {
     console.log(goodbye);
@@ -23,6 +24,7 @@ const runApp = () => {
       console.log(goodbye);
       rl.close(); 
     }
+    console.log(cwdMessage);
   });
 };
 
