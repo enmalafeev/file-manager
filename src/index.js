@@ -1,17 +1,18 @@
 import * as readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'process';
-import * as url from 'url';
+import { homedir } from 'os';
 import { parseArgs } from './parseArgs.js';
+import parseCommands from './parseCommands.js';
 
-const __filename = url.fileURLToPath(import.meta.url);
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const { username } = parseArgs(process.argv);
 
 const runApp = () => {
   const greeting = `Welcome to the File Manager, ${username}!`;
   const goodbye = `Thank you for using File Manager, ${username}, goodbye!`
-  const cwdMessage = `You are currently in ${__dirname}`;
+  process.chdir(homedir());
+  const cwd = process.cwd();
+  const cwdMessage = `You are currently in ${cwd}`;
   console.log(greeting);
   console.log(cwdMessage);
   const rl = readline.createInterface({ input, output });
@@ -23,8 +24,10 @@ const runApp = () => {
     if (input === '.exit') {
       console.log(goodbye);
       rl.close(); 
+    } else {
+      parseCommands(input);
+      console.log(cwdMessage);
     }
-    console.log(cwdMessage);
   });
 };
 
