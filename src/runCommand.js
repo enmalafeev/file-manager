@@ -15,6 +15,17 @@ const commands = {
         const cpus = os.cpus().map(({ model, speed }) => ({ model, speed }));
         console.log(JSON.stringify(cpus, null, 2));
         break;
+      case '--homedir':
+        console.log(os.homedir());
+        break;
+      case '--username':
+        const userInfo = os.userInfo();
+        const { username } = userInfo;
+        console.log(username);
+        break;
+      case '--architecture':
+        console.log(os.arch());
+        break;
     }
     
   }
