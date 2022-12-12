@@ -7,9 +7,16 @@ const commands = {
     state.cwd = path.resolve(state.cwd, '..');
   },
   'os': (arg) => {
-    if (arg === '--EOL') {
-      console.log(JSON.stringify(os.EOL));
+    switch (arg) {
+      case '--EOL':
+        console.log(JSON.stringify(os.EOL));
+        break;
+      case '--cpus':
+        const cpus = os.cpus().map(({ model, speed }) => ({ model, speed }));
+        console.log(JSON.stringify(cpus, null, 2));
+        break;
     }
+    
   }
 }
 
