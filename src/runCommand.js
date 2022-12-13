@@ -1,6 +1,8 @@
 import path from 'path';
 import os from 'os';
+import { writeFile } from 'fs/promises';
 import { state } from './index.js';
+import { createReadStream } from 'fs';
 
 const commands = {
   'up': () => { 
@@ -27,8 +29,13 @@ const commands = {
         console.log(os.arch());
         break;
     }
-    
-  }
+  },
+  'cat': (pathToFile) => {
+    return createReadStream(pathToFile).pipe(process.stdout);
+  },
+  'add': async (fileName) => 
+    await writeFile(`${state.cwd}/${fileName}`, '', { flag: 'ax' }),
+  
 }
 
 export default (command) => {
