@@ -13,31 +13,32 @@ const commands = {
   },
   'cd': async (pathTo) => {
     try {
-      await access(pathTo);
-      state.cwd = path.resolve(state.cwd, pathTo);
+      const newPath = path.resolve(state.cwd, pathTo);
+      await access(newPath);
+      state.cwd = newPath;
     } catch (err) {
       throw new Error('Operation failed');
     }
   },
   'ls': async () => {
-    const files = await readdir(state.cwd);
-    const filesWithStat = files.reduce(async (previousPromise, file) => {
-      let filesAcc = await previousPromise;
+    const dirFiles = await readdir(state.cwd);
+    const dirs = [];
+    const files = [];
+    for (let file of dirFiles) {
       const pathTo = path.resolve(state.cwd, file);
       const stats = await stat(pathTo);
       if (stats.isDirectory()) {
-        filesAcc.push({ name: file, type: 'directory' });
+        dirs.push({ name: file, type: 'directory' });
       }
       if (stats.isFile()) {
-        filesAcc.push({ name: file, type: 'file' });
+        files.push({ name: file, type: 'file' }); 
       }
       if (stats.isSymbolicLink()) {
-        filesAcc.push({ name: file, type: 'unknown' });
+        continue;
       }
-      return filesAcc;
-    }, Promise.resolve([]));
-    const result = await filesWithStat;
-    console.table(result.sort());
+    };
+    const sortedResult = [...dirs, ...files].sort((a, b) => a - b);
+    console.table(sortedResult);
   },
   'os': (arg) => {
     switch (arg) {
