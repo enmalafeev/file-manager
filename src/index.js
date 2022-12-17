@@ -12,25 +12,27 @@ const greeting = `Welcome to the File Manager, ${username}!`;
 const goodbye = `Thank you for using File Manager, ${username}, goodbye!`
 process.chdir(homedir());
 export const state = new State(process.cwd());
+export const rl = readline.createInterface({ input, output, prompt: '> ' });
 
 const runApp = () => {
   console.log(greeting);
   console.log(`You are currently in ${state.cwd}`);
-  const rl = readline.createInterface({ input, output });
-  rl.on('SIGINT', () => {
-    console.log(goodbye);
-    rl.close();
-  });
-  rl.on('line', (input) => {
-    if (input === '.exit') {
-      console.log(goodbye);
-      rl.close(); 
-    } else {
-      const command = parseCommands(input);
-      runCommand(command);
+  rl.prompt();
+  
+  rl.on('line', async (input) => {
+    input = input.trim();
+    const command = parseCommands(input);
+    try {
+      await runCommand(command);
       console.log(`You are currently in ${state.cwd}`);
+    } catch (err) {
+      console.error(err.message);
+      rl.prompt();
     }
+  }).on('close', () => {
+    console.log(goodbye);
+    process.exit(0);
   });
-};
+}
 
 runApp();

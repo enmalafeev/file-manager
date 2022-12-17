@@ -1,12 +1,23 @@
 import path from 'path';
 import os from 'os';
-import { writeFile } from 'fs/promises';
-import { state } from './index.js';
+import { writeFile, access } from 'fs/promises';
+import { rl, state } from './index.js';
 import { createReadStream } from 'fs';
 
 const commands = {
+  '.exit': () => {
+    rl.close();
+  },
   'up': () => { 
     state.cwd = path.resolve(state.cwd, '..');
+  },
+  'cd': async (pathTo) => {
+    try {
+      await access(pathTo);
+      state.cwd = path.resolve(state.cwd, pathTo);
+    } catch (err) {
+      throw new Error('Operation failed');
+    }
   },
   'os': (arg) => {
     switch (arg) {
@@ -39,6 +50,10 @@ const commands = {
 }
 
 export default (command) => {
-  const { commandName, args = [] } = command; 
-  return commands[commandName](...args);
+  const { commandName, args = [] } = command;
+  if (commands[commandName]) {
+    return commands[commandName](...args);
+  } else {
+    throw new Error('Invalid input');
+  }
 }
