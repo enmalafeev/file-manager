@@ -1,6 +1,6 @@
 import path from 'path';
 import os from 'os';
-import { writeFile, access } from 'fs/promises';
+import { writeFile, access, readdir, stat } from 'fs/promises';
 import { rl, state } from './index.js';
 import { createReadStream } from 'fs';
 
@@ -18,6 +18,26 @@ const commands = {
     } catch (err) {
       throw new Error('Operation failed');
     }
+  },
+  'ls': async () => {
+    const files = await readdir(state.cwd);
+    const filesWithStat = files.reduce(async (previousPromise, file) => {
+      let filesAcc = await previousPromise;
+      const pathTo = path.resolve(state.cwd, file);
+      const stats = await stat(pathTo);
+      if (stats.isDirectory()) {
+        filesAcc.push({ name: file, type: 'directory' });
+      }
+      if (stats.isFile()) {
+        filesAcc.push({ name: file, type: 'file' });
+      }
+      if (stats.isSymbolicLink()) {
+        filesAcc.push({ name: file, type: 'unknown' });
+      }
+      return filesAcc;
+    }, Promise.resolve([]));
+    const result = await filesWithStat;
+    console.table(result.sort());
   },
   'os': (arg) => {
     switch (arg) {
