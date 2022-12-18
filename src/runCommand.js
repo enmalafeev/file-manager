@@ -1,6 +1,6 @@
 import path from 'path';
 import os from 'os';
-import { writeFile, access, readdir, stat } from 'fs/promises';
+import { writeFile, access, readdir, stat, rename} from 'fs/promises';
 import { rl, state } from './index.js';
 import { createReadStream } from 'fs';
 
@@ -65,10 +65,25 @@ const commands = {
   'cat': (pathToFile) => {
     return createReadStream(pathToFile).pipe(process.stdout);
   },
-  'add': async (fileName) => 
-    await writeFile(`${state.cwd}/${fileName}`, '', { flag: 'ax' }),
-  
+  'add': async (fileName) => {
+    if (!fileName) {
+      throw new Error('Invalid input');
+    }
+    await writeFile(`${state.cwd}/${fileName}`, '', { flag: 'ax' });
+  },
+  'rn': async (pathToFile, newFileName) => {
+    if (!pathToFile || !newFileName) {
+      throw new Error('Invalid input');
+    }
+    const newPathFile = path.resolve(state.cwd, newFileName);
+    try {
+      await rename(pathToFile, newPathFile);
+    } catch (err) {
+      throw new Error('Operation failed');
+    }
+  }
 }
+
 
 export default (command) => {
   const { commandName, args = [] } = command;
