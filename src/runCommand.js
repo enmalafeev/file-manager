@@ -1,5 +1,7 @@
 import path from 'path';
 import os from 'os';
+import { pipeline } from 'stream/promises';
+import { createBrotliCompress } from 'node:zlib';
 import { writeFile, access, readdir, readFile, stat, rename, unlink } from 'fs/promises';
 import { rl, state } from './index.js';
 import { createReadStream, createWriteStream } from 'fs';
@@ -130,7 +132,21 @@ const commands = {
     } catch (err) {
       throw new Error('Operation failed');
     }
-  }
+  },
+  'compress': async (pathFrom, pathTo) => {
+    if (!pathFrom || !pathTo) {
+      throw new Error('Invalid input');
+    }
+    try {
+      const { name: fileName } = path.parse(pathFrom);
+      const pathFromFile = path.resolve(state.cwd, pathFrom);
+      const compressPathTo = path.join(pathTo, `${fileName}.br`);
+      await access(pathFromFile)
+      await pipeline(createReadStream(pathFromFile), createBrotliCompress(), createWriteStream(compressPathTo))
+    } catch (err) {
+      throw new Error('Operation failed');
+    }
+  },
 }
 
 export default (command) => {
