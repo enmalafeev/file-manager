@@ -88,9 +88,10 @@ const commands = {
     }
     try {
       const { base: fileName } = path.parse(pathFrom);
+      const pathFromFile = path.resolve(state.cwd, pathFrom);
       const copyPathTo = path.join(pathTo, fileName);
-      await Promise.all([access(pathFrom), access(pathTo)]);
-      const rs = createReadStream(pathFrom);
+      await Promise.all([access(pathFromFile), access(pathTo)]);
+      const rs = createReadStream(pathFromFile);
       const ws = createWriteStream(copyPathTo);
       await rs.pipe(ws);
     } catch (err) {
@@ -105,6 +106,17 @@ const commands = {
       throw new Error('Operation failed'); 
     }
   },
+  'rm': async (pathTo) => {
+    if (!pathTo) {
+      throw new Error('Invalid input');
+    }
+    try {
+      const pathToFile = path.resolve(state.cwd, pathTo);
+      await unlink(pathToFile);
+    } catch (err) {
+      throw new Error('Operation failed'); 
+    }
+  }
 }
 
 export default (command) => {
