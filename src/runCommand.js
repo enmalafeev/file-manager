@@ -2,7 +2,7 @@ import path from 'path';
 import os from 'os';
 import { writeFile, access, readdir, stat, rename} from 'fs/promises';
 import { rl, state } from './index.js';
-import { createReadStream } from 'fs';
+import { createReadStream, createWriteStream } from 'fs';
 
 const commands = {
   '.exit': () => {
@@ -78,6 +78,21 @@ const commands = {
     const newPathFile = path.resolve(state.cwd, newFileName);
     try {
       await rename(pathToFile, newPathFile);
+    } catch (err) {
+      
+    }
+  },
+  'cp': async (pathFrom, pathTo) => {
+    if (!pathFrom || !pathTo) {
+      throw new Error('Invalid input');
+    }
+    try {
+      const { base: fileName } = path.parse(pathFrom);
+      const copyPathTo = path.join(pathTo, fileName);
+      await Promise.all([access(pathFrom), access(pathTo)]);
+      const rs = createReadStream(pathFrom);
+      const ws = createWriteStream(copyPathTo);
+      await rs.pipe(ws);
     } catch (err) {
       throw new Error('Operation failed');
     }
