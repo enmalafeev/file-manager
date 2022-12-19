@@ -1,6 +1,6 @@
 import path from 'path';
 import os from 'os';
-import { writeFile, access, readdir, stat, rename} from 'fs/promises';
+import { writeFile, access, readdir, stat, rename, unlink } from 'fs/promises';
 import { rl, state } from './index.js';
 import { createReadStream, createWriteStream } from 'fs';
 
@@ -96,9 +96,16 @@ const commands = {
     } catch (err) {
       throw new Error('Operation failed');
     }
-  }
+  },
+  'mv': async (pathFrom, pathTo) => {
+    try {
+      await commands.cp(pathFrom, pathTo);
+      await unlink(pathFrom);
+    } catch (err) {
+      throw new Error('Operation failed'); 
+    }
+  },
 }
-
 
 export default (command) => {
   const { commandName, args = [] } = command;
