@@ -1,8 +1,9 @@
 import path from 'path';
 import os from 'os';
-import { writeFile, access, readdir, stat, rename, unlink } from 'fs/promises';
+import { writeFile, access, readdir, readFile, stat, rename, unlink } from 'fs/promises';
 import { rl, state } from './index.js';
 import { createReadStream, createWriteStream } from 'fs';
+import { createHash } from 'node:crypto';
 
 const commands = {
   '.exit': () => {
@@ -115,6 +116,19 @@ const commands = {
       await unlink(pathToFile);
     } catch (err) {
       throw new Error('Operation failed'); 
+    }
+  },
+  'hash': async (pathTo) => {
+    if (!pathTo) {
+      throw new Error('Invalid input');
+    }
+    const pathToFile = path.resolve(state.cwd, pathTo);
+    try {
+      const content = await readFile(pathToFile, { encoding: 'utf8', flag: 'r' });
+      const hash = createHash('sha256').update(content).digest('hex');
+      console.log(hash);
+    } catch (err) {
+      throw new Error('Operation failed');
     }
   }
 }
